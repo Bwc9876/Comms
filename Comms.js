@@ -30,7 +30,7 @@
 
 //A constant for debugging various aspects of the system
 //If this is on, any instances of a Comm will be exposed to the console via document.comm
-const DEBUG = true;
+const DEBUG = false;
 
 //Default config to use for PeerConnections, can be overriden with the config argument in the constructor
 const DEFAULT_CONFIG = {
