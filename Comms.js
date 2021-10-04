@@ -286,7 +286,6 @@ export default class Comm {
    * If it's the other person then we need to reset many variables (internal)
    */
   memberLeftRoom(member){
-    let me = document.comm;
     if (this.joined && member.id == this.remote.id){
       //First, we're going to reset a lot of variables
       this.remote.micActivity = false;
@@ -372,7 +371,7 @@ export default class Comm {
    * Run to begin the sdp and ice transfer process (internal)
    */
   initRTC(){
-    console.log(this.isOfferer? "OFFERER" : "ANSWERER");
+    if (DEBUG) console.log(this.isOfferer? "OFFERER" : "ANSWERER");
     //General flow of the sdp process
     // Offerer sends sdp -> Receiver receives and registers -> Receiver sends back sdp -> Offerer received and registers -> Begin ICE transfer
 
@@ -399,7 +398,6 @@ export default class Comm {
    */
   pcTrackReceived(event){
     const stream = event.streams[0];
-    let me = document.comm;
     if (event.track.kind == "video"){
       let newStream = new MediaStream([event.track]);
       this.remote.video = newStream;
@@ -426,7 +424,6 @@ export default class Comm {
    * Run when the channel is open (internal)
    */
   channelOpen(event){
-    let me = document.comm;
     this.channelInitialized = true;
     this.channelCatchUp();
   }
@@ -444,14 +441,12 @@ export default class Comm {
    * Run when the other Comm makes a channel for communication (internal)
    */
   pcChannelReceived(event){
-    let me = document.comm;
     this.dataChannel = event.channel;
     this.dataChannel.onmessage = this.pcChannelData.bind(this);
     this.channelInitialized = true;
   }
 
   pcChannelData(event){
-    let me = document.comm;
     let data = JSON.parse(event.data);
     let client = {clientData:{name:data.name}};
     this.messageTypes[data.type](data.content, client, me);
@@ -482,7 +477,6 @@ export default class Comm {
    * This will answer an incoming sdp request if this Comm isn't the one that made the offer (internal)
    */
   makeSdpAnswer(){
-    let me = document.comm;
     if (!this.isOfferer){
       this.pc.createAnswer().then(this.sdpSuccessful.bind(this));
     }
@@ -492,7 +486,6 @@ export default class Comm {
    * This will be run by both the offerer and the receiver when they've sucesfully contacted eachother (internal)
    */
   sdpSuccessful(description){
-    let me = document.comm;
     this.pc.setLocalDescription(description).then(this.pcCallback.bind(this));
     if (this.local.micOn) this.sendMessage("micStatus", true);
     if (this.local.camOn) this.sendMessage("camStatus", true);
@@ -511,7 +504,6 @@ export default class Comm {
    * Run when the PeerConnection has a new candidate available (internal)
    */
   pcCandidate(event){
-    let me = document.comm;
     if (event.candidate) {
       if (this.sdpDone){
         this.sendSignal('candidate', event.candidate);
@@ -525,7 +517,7 @@ export default class Comm {
    * Run when we've received a candidate thorugh signalling (internal)
    */
   candidateReceived(can, client, me){
-    console.log(this.pc.remoteDescription);
+    if (DEBUG) console.log(this.pc.remoteDescription);
     this.pc.addIceCandidate(new RTCIceCandidate(can));
   }
 
@@ -615,7 +607,6 @@ export default class Comm {
    * Called every millisecond to check mic activity and determine whether the mic is active
    */
   processAudio(){
-    let me = document.comm;
     let array = new Uint8Array(this.local.audioAnalyser.frequencyBinCount);
     this.local.audioAnalyser.getByteFrequencyData(array);
     let values = 0;
@@ -737,7 +728,6 @@ export default class Comm {
    * Used when we succesfully get the image that represents no video (internal)
    */
   noVideoImgFinished(){
-    let me = document.comm;
     this.local.novideoCanvas.width = this.local.noCamImage.width;
     this.local.novideoCanvas.height = this.local.noCamImage.height;
     this.local.novideoContext.drawImage(this.local.noCamImage, 0, 0);
